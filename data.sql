@@ -127,7 +127,7 @@ CREATE TABLE `station` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,7 +136,7 @@ CREATE TABLE `station` (
 
 LOCK TABLES `station` WRITE;
 /*!40000 ALTER TABLE `station` DISABLE KEYS */;
-INSERT INTO `station` VALUES (5,'BWI (MD)'),(9,'Fayetteville (NC)'),(8,'Florence (SC)'),(4,'North Charleston (SC)'),(7,'North Philadelphia (PA)'),(3,'Penn Station (MD)'),(2,'Penn Station (NY)'),(6,'Pittsburgh (PA)'),(10,'Richmond (VA)'),(11,'Rocky Mount (NC)'),(12,'Savannah (GA)'),(1,'Union Station (DC)');
+INSERT INTO `station` VALUES (5,'BWI (MD)'),(15,'Chicago (IL)'),(13,'Cleveland (OH)'),(9,'Fayetteville (NC)'),(8,'Florence (SC)'),(4,'North Charleston (SC)'),(7,'North Philadelphia (PA)'),(3,'Penn Station (MD)'),(2,'Penn Station (NY)'),(6,'Pittsburgh (PA)'),(10,'Richmond (VA)'),(11,'Rocky Mount (NC)'),(12,'Savannah (GA)'),(14,'Toledo (OH)'),(1,'Union Station (DC)');
 /*!40000 ALTER TABLE `station` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -154,7 +154,7 @@ CREATE TABLE `track` (
   `distance` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `start` (`start`,`end`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -163,7 +163,7 @@ CREATE TABLE `track` (
 
 LOCK TABLES `track` WRITE;
 /*!40000 ALTER TABLE `track` DISABLE KEYS */;
-INSERT INTO `track` VALUES (1,2,7,145),(2,5,7,183),(3,1,5,50),(4,1,10,175),(5,10,11,193),(6,9,11,146),(7,8,9,140),(8,4,8,182),(9,4,12,173);
+INSERT INTO `track` VALUES (1,2,7,145),(2,5,7,183),(3,1,5,50),(4,1,10,175),(5,10,11,193),(6,9,11,146),(7,8,9,140),(8,4,8,182),(9,4,12,173),(10,1,6,370),(11,6,13,214),(12,13,14,189),(13,14,15,394);
 /*!40000 ALTER TABLE `track` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -222,4 +222,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-04-20 16:34:40
+-- Dump completed on 2017-04-20 16:44:14

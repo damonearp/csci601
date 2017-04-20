@@ -173,7 +173,7 @@ EOT;
 		</ol>
 		<h3>Operations</h3>
 		
-		<div class="insert">
+		<div id="stations" class="insert">
 			<p>Stations</p>
 			<form action="create_station.php" method="post">
 				<label>New Station: <input type="text" name="station_name" /></label>
@@ -194,7 +194,7 @@ EOT;
 				</tbody>
 			</table>
 		</div>
-		<div class="insert">
+		<div id="trains" class="insert">
 			<p>Trains</p>
 			<form action="create_train.php" method="post">
 				<label>Train Name: <input type="text" name="train_name" /></label>
@@ -216,7 +216,7 @@ EOT;
 				</tbody>
 			</table>
 		</div>
-		<div class="insert">
+		<div id="platforms" class="insert">
 			<p>Platforms</p>	
 			<form action="create_platform.php" method="post">
 				<label>Platform: <input type="text" name="platform_label" /></label>
@@ -255,7 +255,7 @@ EOT;
 				</tbody>
 			</table>
 		</div>
-		<div class="insert">
+		<div id="tracks" class="insert">
 			<p>Tracks</p>
 			<form action="create_track.php" method="post">
 				<label>From: <select name="track_to">
@@ -299,7 +299,7 @@ EOT;
 				</tbody>
 			</table>
 		</div>
-		<div class="insert">
+		<div id="itineraries" class="insert">
 			<p>Itineraries</p>
 			<form action="create_itinerary.php" method="post">
 				<label>Departure Time: <input type="text" name="itinerary_etd" value="YYYY-MM-dd HH:mm::ss" /></label>
