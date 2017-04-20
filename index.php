@@ -33,7 +33,7 @@ $create_track = <<<EOT
 		id BIGINT NOT NULL AUTO_INCREMENT,
 		start BIGINT NOT NULL REFERENCES station(id),
 		end BIGINT NOT NULL REFERENCES station(id),
-		distance TIME NOT NULL,
+		distance BIGINT NOT NULL,
 		PRIMARY KEY (id),
 		UNIQUE (start, end)
 	)
@@ -202,13 +202,13 @@ EOT;
 				<input type="submit" />
 			</form>
 			<table>
-				<thead><tr><th>Train</th><th>Capacity</th></thead>
+				<thead><tr><th>Train</th><th>Capacity</th><th>Speed (mph)</th><th>Speed (kmh)</th></tr></thead>
 				<tbody>
 <?php
-	$result = $conn->query("SELECT name, capacity FROM train ORDER BY name ASC");
+	$result = $conn->query("SELECT name, capacity, speed AS kmh, kmh_to_mph(speed) AS mph FROM train ORDER BY name ASC");
 	if ($result) {
 		while ($row = $result->fetch_assoc()) {
-			echo "<tr><td>" . $row["name"]  . "</td><td>" . $row["capacity"] . "</td></tr>";
+			echo "<tr><td>" . $row["name"]  . "</td><td>" . $row["capacity"] . "</td><td>" . $row["mph"] . "</td><td>" . $row["kmh"] . "</td></tr>";
 		}
 		$result->close();
 	}
@@ -234,15 +234,22 @@ EOT;
 				<input type="submit" />
 			</form>
 			<table>
-                <thead><tr><th>Station</th><th>Platform</th></thead>
+                <thead><tr><th>Station</th><th>Platforms</th></thead>
                 <tbody>
 <?php
 	$result = $conn->query("SELECT s.name AS station, p.designation AS label FROM platform AS p LEFT JOIN station AS s ON s.id = p.station ORDER BY s.name, p.designation ASC");
     if ($result) {
+		$flat = array();
         while ($row = $result->fetch_assoc()) {
-            echo '<tr><td>' . $row['station'] . '</td><td>' . $row['label'] . '</td></tr>';
+			if (!array_key_exists($row['station'], $flat)) {
+				$flat[$row['station']] = array();
+			}
+			array_push($flat[$row['station']], $row['label']);
         }
 		$result->close();
+		foreach ($flat as $station => $platforms) {
+			echo '<tr><td>' . $station . '</td><td>' . join(', ', $platforms) . '</td></tr>';
+		}
     } else { die($conn->error); }
 ?>		
 				</tbody>
@@ -259,6 +266,7 @@ EOT;
 		while ($row = $result->fetch_assoc()) {
 			echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>'; 
 		}
+		$result->close();
 	}
 ?>
 				</select></label>
@@ -269,20 +277,23 @@ EOT;
         while ($row = $result->fetch_assoc()) {
             echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
         }
+		$result->close();
     }
 ?>				
 				</select></label>
-			<input type="submit" />
+				<label>Distance: <input type="text" name="track_distance" value="kilometers"></input></label>
+				<input type="submit" />
 			</form>
 			<table>
-				<thead><tr><th>A</th><th>B</th></tr></thead>
+				<thead><tr><th>A</th><th>B</th><th>Distance (mi)</th><th>km</th></tr></thead>
 				<tbody>
 <?php
-	$result = $conn->query("SELECT a.name AS a, b.name AS b FROM track AS t LEFT JOIN station AS a ON t.start = a.id LEFT JOIN station AS b ON t.end = b.id ORDER BY a.name, b.name ASC");
+	$result = $conn->query("SELECT a.name AS a, b.name AS b, distance AS km, kmh_to_mph(distance) AS mi FROM track AS t LEFT JOIN station AS a ON t.start = a.id LEFT JOIN station AS b ON t.end = b.id ORDER BY a.name, b.name ASC");
 	if ($result) {
 		while ($row = $result->fetch_assoc()) {
-			echo '<tr><td>' . $row['a'] . '</td><td>' . $row['b'] . '</td></tr>';
+			echo '<tr><td>' . $row['a'] . '</td><td>' . $row['b'] . '</td><td>' . $row['mi'] . '</td><td>' . $row['km'] . '</td></tr>';
 		}
+		$result->close();
 	}
 ?>
 				</tbody>
