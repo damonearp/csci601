@@ -18,5 +18,5 @@
 	if (!$stmt->execute()) {
 		die("Execute failed: " . $stmt->error);
 	}
-	header("Location: index.php");
+	header("Location: index.php#platforms");
 ?>

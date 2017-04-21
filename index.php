@@ -60,7 +60,6 @@ $create_schedule = <<<EOT
 		PRIMARY KEY (departure, train, track)
 	)
 EOT;
-
 $create_pretty = <<<EOT
     CREATE OR REPLACE VIEW pretty AS
         SELECT
@@ -159,15 +158,14 @@ EOT;
                     die("Failed to create track table: " . $conn->error);
                 }
                 echo "<li>Create table track: ok</li>";
-                //if (!$conn->query($create_itinerary)) {
-                //    die("Failed to create itinerary table: " . $conn->error);
-                //}
-                echo "<li>Create table itinerary: ok</li>";
                 if (!$conn->query($create_schedule)) {
                     die("Failed to create schedule table: " . $conn->error);
                 }
-                echo "<li>Create table passenger: ok</li>";
-                echo "<li>DB Tables created</li>";
+                echo "<li>Create table schedule: ok</li>";
+                if (!$conn->query($create_pretty)) {
+                    die("Failed to create pretty view: " . $conn->error);
+                }
+                echo "<li>Create view pretty: ok</li>";
                 if (!$conn->query($drop_mph_to_kmh) || !$conn->query($create_mph_to_kmh)) {
                     die("Failed to create function mph_to_kmh");
                 }
@@ -176,6 +174,10 @@ EOT;
                     die("Failed to create function kmh_to_mph");
                 }
                 echo "<li>Create function kmh_to_mph: ok</li>";
+                if (!$conn->query($drop_eta) || !$conn->query($create_eta)) {
+                    die("Failed to create function eta");
+                }
+                echo "<li>Create function eta: ok</li>";
             ?>
 		</ol>
 		<h3>Operations</h3>

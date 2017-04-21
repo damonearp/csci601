@@ -16,34 +16,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `itinerary`
---
-
-DROP TABLE IF EXISTS `itinerary`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `itinerary` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `train` bigint(20) NOT NULL,
-  `depart` bigint(20) NOT NULL,
-  `etd` datetime NOT NULL,
-  `arrive` bigint(20) NOT NULL,
-  `eta` datetime NOT NULL,
-  `status` varchar(255) NOT NULL DEFAULT 'On Time',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `itinerary`
---
-
-LOCK TABLES `itinerary` WRITE;
-/*!40000 ALTER TABLE `itinerary` DISABLE KEYS */;
-/*!40000 ALTER TABLE `itinerary` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `passenger`
 --
 
@@ -81,7 +53,7 @@ CREATE TABLE `platform` (
   `designation` varchar(16) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `station` (`station`,`designation`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -90,30 +62,50 @@ CREATE TABLE `platform` (
 
 LOCK TABLES `platform` WRITE;
 /*!40000 ALTER TABLE `platform` DISABLE KEYS */;
-INSERT INTO `platform` VALUES (27,1,'10'),(28,1,'20'),(29,1,'30'),(30,1,'40'),(31,1,'50'),(17,2,'1a'),(18,2,'1b'),(19,2,'2'),(20,2,'3'),(21,2,'4'),(22,2,'5'),(23,2,'6'),(13,3,'A'),(14,3,'B'),(15,3,'C'),(16,3,'D'),(6,4,'1'),(7,4,'2'),(1,5,'A'),(2,5,'B'),(24,6,'A'),(25,6,'B'),(26,6,'C'),(8,7,'1'),(9,7,'2'),(10,7,'3'),(11,7,'4'),(12,7,'5'),(5,8,'1'),(3,9,'1'),(4,9,'2'),(32,10,'A'),(33,10,'B'),(34,11,'1'),(35,12,'A'),(36,12,'B');
+INSERT INTO `platform` VALUES (27,1,'10'),(28,1,'20'),(29,1,'30'),(30,1,'40'),(31,1,'50'),(17,2,'1a'),(18,2,'1b'),(19,2,'2'),(20,2,'3'),(21,2,'4'),(22,2,'5'),(23,2,'6'),(6,4,'1'),(7,4,'2'),(1,5,'A'),(2,5,'B'),(24,6,'A'),(25,6,'B'),(26,6,'C'),(8,7,'1'),(9,7,'2'),(10,7,'3'),(11,7,'4'),(12,7,'5'),(5,8,'1'),(3,9,'1'),(4,9,'2'),(32,10,'A'),(33,10,'B'),(34,11,'1'),(35,12,'A'),(36,12,'B'),(37,16,'1'),(38,16,'2'),(39,16,'3');
 /*!40000 ALTER TABLE `platform` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Temporary table structure for view `schedule`
+-- Temporary table structure for view `pretty`
+--
+
+DROP TABLE IF EXISTS `pretty`;
+/*!50001 DROP VIEW IF EXISTS `pretty`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `pretty` (
+  `train` tinyint NOT NULL,
+  `leaving` tinyint NOT NULL,
+  `departure` tinyint NOT NULL,
+  `arriving` tinyint NOT NULL,
+  `eta` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `schedule`
 --
 
 DROP TABLE IF EXISTS `schedule`;
-/*!50001 DROP VIEW IF EXISTS `schedule`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `schedule` (
-  `id` tinyint NOT NULL,
-  `train` tinyint NOT NULL,
-  `depart_time` tinyint NOT NULL,
-  `depart_station` tinyint NOT NULL,
-  `depart_platform` tinyint NOT NULL,
-  `arrive_time` tinyint NOT NULL,
-  `arrive_station` tinyint NOT NULL,
-  `arrive_platform` tinyint NOT NULL,
-  `status` tinyint NOT NULL
-) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `schedule` (
+  `departure` datetime NOT NULL,
+  `train` bigint(20) NOT NULL,
+  `track` bigint(20) NOT NULL,
+  PRIMARY KEY (`departure`,`train`,`track`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `schedule`
+--
+
+LOCK TABLES `schedule` WRITE;
+/*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
+/*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `station`
@@ -127,7 +119,7 @@ CREATE TABLE `station` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,7 +128,7 @@ CREATE TABLE `station` (
 
 LOCK TABLES `station` WRITE;
 /*!40000 ALTER TABLE `station` DISABLE KEYS */;
-INSERT INTO `station` VALUES (5,'BWI (MD)'),(15,'Chicago (IL)'),(13,'Cleveland (OH)'),(9,'Fayetteville (NC)'),(8,'Florence (SC)'),(4,'North Charleston (SC)'),(7,'North Philadelphia (PA)'),(3,'Penn Station (MD)'),(2,'Penn Station (NY)'),(6,'Pittsburgh (PA)'),(10,'Richmond (VA)'),(11,'Rocky Mount (NC)'),(12,'Savannah (GA)'),(14,'Toledo (OH)'),(1,'Union Station (DC)');
+INSERT INTO `station` VALUES (5,'Baltimore (MD)'),(16,'Boston (MA)'),(15,'Chicago (IL)'),(13,'Cleveland (OH)'),(9,'Fayetteville (NC)'),(8,'Florence (SC)'),(17,'New Haven (CT)'),(2,'New York (NY)'),(4,'North Charleston (SC)'),(7,'North Philadelphia (PA)'),(6,'Pittsburgh (PA)'),(10,'Richmond (VA)'),(11,'Rocky Mount (NC)'),(12,'Savannah (GA)'),(14,'Toledo (OH)'),(1,'Union Station (DC)');
 /*!40000 ALTER TABLE `station` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -154,7 +146,7 @@ CREATE TABLE `track` (
   `distance` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `start` (`start`,`end`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -163,7 +155,7 @@ CREATE TABLE `track` (
 
 LOCK TABLES `track` WRITE;
 /*!40000 ALTER TABLE `track` DISABLE KEYS */;
-INSERT INTO `track` VALUES (1,2,7,145),(2,5,7,183),(3,1,5,50),(4,1,10,175),(5,10,11,193),(6,9,11,146),(7,8,9,140),(8,4,8,182),(9,4,12,173),(10,1,6,370),(11,6,13,214),(12,13,14,189),(13,14,15,394);
+INSERT INTO `track` VALUES (1,2,7,145),(2,5,7,183),(3,1,5,50),(4,1,10,175),(5,10,11,193),(6,9,11,146),(7,8,9,140),(8,4,8,182),(9,4,12,173),(10,1,6,370),(11,6,13,214),(12,13,14,189),(13,14,15,394),(14,7,2,145),(15,7,5,183),(16,5,1,50),(17,10,1,175),(18,11,10,193),(19,11,9,146),(20,9,8,140),(21,8,4,182),(22,12,4,173),(23,6,1,370),(24,13,6,214),(25,14,13,189),(26,15,14,394),(27,16,17,210),(28,2,17,130);
 /*!40000 ALTER TABLE `track` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -195,11 +187,11 @@ INSERT INTO `train` VALUES (1,'Northeast Regional',525,201),(2,'Acela Express',4
 UNLOCK TABLES;
 
 --
--- Final view structure for view `schedule`
+-- Final view structure for view `pretty`
 --
 
-/*!50001 DROP TABLE IF EXISTS `schedule`*/;
-/*!50001 DROP VIEW IF EXISTS `schedule`*/;
+/*!50001 DROP TABLE IF EXISTS `pretty`*/;
+/*!50001 DROP VIEW IF EXISTS `pretty`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
 /*!50001 SET @saved_col_connection     = @@collation_connection */;
@@ -208,7 +200,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = latin1_swedish_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`csci601`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `schedule` AS select `i`.`id` AS `id`,`t`.`name` AS `train`,`i`.`etd` AS `depart_time`,`ds`.`name` AS `depart_station`,`dp`.`designation` AS `depart_platform`,`i`.`eta` AS `arrive_time`,`ars`.`name` AS `arrive_station`,`arp`.`designation` AS `arrive_platform`,`i`.`status` AS `status` from (((((`itinerary` `i` left join `platform` `dp` on((`i`.`depart` = `dp`.`id`))) left join `station` `ds` on((`dp`.`station` = `ds`.`id`))) left join `platform` `arp` on((`i`.`arrive` = `arp`.`id`))) left join `station` `ars` on((`arp`.`station` = `ars`.`id`))) left join `train` `t` on((`i`.`train` = `t`.`id`))) */;
+/*!50001 VIEW `pretty` AS select `train`.`name` AS `train`,`start`.`name` AS `leaving`,`schedule`.`departure` AS `departure`,`end`.`name` AS `arriving`,`eta`(`schedule`.`departure`,`train`.`speed`,`track`.`distance`) AS `eta` from ((((`schedule` left join `train` on((`train`.`id` = `schedule`.`train`))) left join `track` on((`track`.`id` = `schedule`.`track`))) left join `station` `start` on((`track`.`start` = `start`.`id`))) left join `station` `end` on((`track`.`end` = `end`.`id`))) order by `schedule`.`departure` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -222,4 +214,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-04-20 16:44:14
+-- Dump completed on 2017-04-21  2:16:49

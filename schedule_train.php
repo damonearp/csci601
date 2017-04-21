@@ -92,12 +92,12 @@
             break;
         }
         if (($n = nextHop($i, $dest)) > 0) {
-            $first = $n;
+            $first = $i;
             break;
         }
     }
     $stmt->close();
-      
+
     /* step 2 - build an array of each hop */
     $hops = array();
     $next = $first;
