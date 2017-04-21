@@ -61,23 +61,23 @@ $create_schedule = <<<EOT
 	)
 EOT;
 
-/*
-$create_schedule = <<<EOT
-	CREATE OR REPLACE VIEW schedule AS
-		SELECT 
-			i.id AS id, 
-			t.name AS train, 
-			i.etd AS depart_time, ds.name AS depart_station, dp.designation AS depart_platform, 
-			i.eta AS arrive_time, ars.name AS arrive_station, arp.designation AS arrive_platform,
-			i.status AS status
-		FROM itinerary AS i 
-			LEFT JOIN platform AS dp ON i.depart = dp.id
-				LEFT JOIN station AS ds ON dp.station = ds.id
-			LEFT JOIN platform AS arp ON i.arrive = arp.id
-				LEFT JOIN station AS ars ON arp.station = ars.id
-			LEFT JOIN train AS t ON i.train = t.id 
+$create_pretty = <<<EOT
+    CREATE OR REPLACE VIEW pretty AS
+        SELECT
+            train.name AS train, 
+            start.name AS leaving, 
+            schedule.departure AS departure,
+            end.name AS arriving, 
+            eta(schedule.departure, train.speed, track.distance) AS eta
+        FROM
+            schedule AS schedule
+                LEFT JOIN train AS train ON train.id = schedule.train
+                LEFT JOIN track AS track ON track.id = schedule.track
+                    LEFT JOIN station AS start ON track.start = start.id
+                    LEFT JOIN station AS end ON track.end = end.id
+        ORDER BY schedule.departure ASC 
 EOT;
-*/
+
 $drop_mph_to_kmh = "DROP FUNCTION IF EXISTS mph_to_kmh";
 $create_mph_to_kmh = <<<EOT
 	CREATE FUNCTION mph_to_kmh (mph BIGINT) RETURNS BIGINT RETURN mph * 1.60934
@@ -85,6 +85,11 @@ EOT;
 $drop_kmh_to_mph = "DROP FUNCTION IF EXISTS kmh_to_mph";
 $create_kmh_to_mph = <<<EOT
 	CREATE FUNCTION kmh_to_mph (kmh BIGINT) RETURNS BIGINT RETURN kmh * 0.621371
+EOT;
+$drop_eta = "DROP FUNCTION IF EXISTS eta";
+$create_eta = <<<EOT
+    CREATE FUNCTION eta (start DATETIME, speed BIGINT, distance BIGINT) RETURNS DATETIME 
+        RETURN start + INTERVAL (CAST(distance AS DOUBLE) / CAST(speed AS DOUBLE) * 60 * 60) SECOND
 EOT;
 ?>
 
@@ -132,48 +137,50 @@ EOT;
 	<body>
 		<h3>Initialization Status</h3>
 		<ol>
-<?php
-	$conn = new mysqli("localhost", "csci601", "csci601", "csci601");
-	if ($conn->connect_error) {
-		die("Connection failed: ". $conn->connect_error);
-	}
-	echo "<li>DB Connection Success</li>";
-	if(!$conn->query($create_station)) {
-		die("Failed to create station table: " . $conn->error);
-	}
-	echo "<li>Create table station: ok</li>";
-	if (!$conn->query($create_platform)) {
-		die("Failed to create platform table: " . $conn->error);
-	}
-	echo "<li>Create table platform: ok</li>";
-    if (!$conn->query($create_train)) {
-		die("Failed to create train table: " . $conn->error);
-	}	
-	echo "<li>Create table train: ok</li>";
-	if (!$conn->query($create_track)) {
-		die("Failed to create track table: " . $conn->error);
-	}
-	echo "<li>Create table track: ok</li>";
-/*	if (!$conn->query($create_itinerary)) {
-		die("Failed to create itinerary table: " . $conn->error);
-	} */
-	echo "<li>Create table itinerary: ok</li>";
-	if (!$conn->query($create_schedule)) {
-		die("Failed to create schedule table: " . $conn->error);
-	}
-	echo "<li>Create table passenger: ok</li>";
-	echo "<li>DB Tables created</li>";
-	if (!$conn->query($drop_mph_to_kmh) || !$conn->query($create_mph_to_kmh)) {
-		die("Failed to create function mph_to_kmh");
-	}
-	echo "<li>Create function mph_to_kmh: ok</li>";
-	if (!$conn->query($drop_kmh_to_mph) || !$conn->query($create_kmh_to_mph)) {
-        die("Failed to create function kmh_to_mph");
-    }
-    echo "<li>Create function kmh_to_mph: ok</li>";
-?>
+            <?php
+                $conn = new mysqli("localhost", "csci601", "csci601", "csci601");
+                if ($conn->connect_error) {
+                    die("Connection failed: ". $conn->connect_error);
+                }
+                echo "<li>DB Connection Success</li>";
+                if(!$conn->query($create_station)) {
+                    die("Failed to create station table: " . $conn->error);
+                }
+                echo "<li>Create table station: ok</li>";
+                if (!$conn->query($create_platform)) {
+                    die("Failed to create platform table: " . $conn->error);
+                }
+                echo "<li>Create table platform: ok</li>";
+                if (!$conn->query($create_train)) {
+                    die("Failed to create train table: " . $conn->error);
+                }	
+                echo "<li>Create table train: ok</li>";
+                if (!$conn->query($create_track)) {
+                    die("Failed to create track table: " . $conn->error);
+                }
+                echo "<li>Create table track: ok</li>";
+                //if (!$conn->query($create_itinerary)) {
+                //    die("Failed to create itinerary table: " . $conn->error);
+                //}
+                echo "<li>Create table itinerary: ok</li>";
+                if (!$conn->query($create_schedule)) {
+                    die("Failed to create schedule table: " . $conn->error);
+                }
+                echo "<li>Create table passenger: ok</li>";
+                echo "<li>DB Tables created</li>";
+                if (!$conn->query($drop_mph_to_kmh) || !$conn->query($create_mph_to_kmh)) {
+                    die("Failed to create function mph_to_kmh");
+                }
+                echo "<li>Create function mph_to_kmh: ok</li>";
+                if (!$conn->query($drop_kmh_to_mph) || !$conn->query($create_kmh_to_mph)) {
+                    die("Failed to create function kmh_to_mph");
+                }
+                echo "<li>Create function kmh_to_mph: ok</li>";
+            ?>
 		</ol>
 		<h3>Operations</h3>
+
+
 		
 		<div id="stations" class="insert">
 			<p>Stations</p>
@@ -184,18 +191,22 @@ EOT;
 			<table>
 				<thead><tr><th>Station</th></thead>
 				<tbody>
-<?php
-	$result = $conn->query("SELECT name FROM station ORDER BY name ASC");
-	if ($result) {
-		while ($row = $result->fetch_assoc()) {
-			echo "<tr><td>" . $row["name"]  . "</td></tr>";
-		}
-		$result->close();
-	}
-?>
+                    <?php
+                        $result = $conn->query("SELECT name FROM station ORDER BY name ASC");
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr><td>" . $row["name"]  . "</td></tr>";
+                            }
+                            $result->close();
+                        }
+                    ?>
 				</tbody>
 			</table>
 		</div>
+
+
+
+
 		<div id="trains" class="insert">
 			<p>Trains</p>
 			<form action="create_train.php" method="post">
@@ -206,82 +217,91 @@ EOT;
 			<table>
 				<thead><tr><th>Train</th><th>Capacity</th><th>Speed (mph)</th><th>Speed (kmh)</th></tr></thead>
 				<tbody>
-<?php
-	$result = $conn->query("SELECT name, capacity, speed AS kmh, kmh_to_mph(speed) AS mph FROM train ORDER BY name ASC");
-	if ($result) {
-		while ($row = $result->fetch_assoc()) {
-			echo "<tr><td>" . $row["name"]  . "</td><td>" . $row["capacity"] . "</td><td>" . $row["mph"] . "</td><td>" . $row["kmh"] . "</td></tr>";
-		}
-		$result->close();
-	}
-?>
+                    <?php
+                        $result = $conn->query("SELECT name, capacity, speed AS kmh, kmh_to_mph(speed) AS mph FROM train ORDER BY name ASC");
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo "<tr><td>" . $row["name"]  . "</td><td>" . $row["capacity"] . "</td><td>" . $row["mph"] . "</td><td>" . $row["kmh"] . "</td></tr>";
+                            }
+                            $result->close();
+                        }
+                    ?>
 				</tbody>
 			</table>
 		</div>
+
+
+
+
+
 		<div id="platforms" class="insert">
 			<p>Platforms</p>	
 			<form action="create_platform.php" method="post">
 				<label>Platform: <input type="text" name="platform_label" /></label>
 				<label>Station: <select name="platform_station">
-<?php
-	$result = $conn->query("SELECT id, name FROM station ORDER BY name ASC");	
-	if ($result) {
-		while ($row = $result->fetch_assoc()) {
-			echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
-		}
-		$result->close();
-	}
-?>
+                    <?php
+                        $result = $conn->query("SELECT id, name FROM station ORDER BY name ASC");	
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
+                            }
+                            $result->close();
+                        }
+                    ?>
 				</select></label>
 				<input type="submit" />
 			</form>
 			<table>
                 <thead><tr><th>Station</th><th>Platforms</th></thead>
                 <tbody>
-<?php
-	$result = $conn->query("SELECT s.name AS station, p.designation AS label FROM platform AS p LEFT JOIN station AS s ON s.id = p.station ORDER BY s.name, p.designation ASC");
-    if ($result) {
-		$flat = array();
-        while ($row = $result->fetch_assoc()) {
-			if (!array_key_exists($row['station'], $flat)) {
-				$flat[$row['station']] = array();
-			}
-			array_push($flat[$row['station']], $row['label']);
-        }
-		$result->close();
-		foreach ($flat as $station => $platforms) {
-			echo '<tr><td>' . $station . '</td><td>' . join(', ', $platforms) . '</td></tr>';
-		}
-    } else { die($conn->error); }
-?>		
+                    <?php
+                        $result = $conn->query("SELECT s.name AS station, p.designation AS label FROM platform AS p LEFT JOIN station AS s ON s.id = p.station ORDER BY s.name, p.designation ASC");
+                        if ($result) {
+                            $flat = array();
+                            while ($row = $result->fetch_assoc()) {
+                                if (!array_key_exists($row['station'], $flat)) {
+                                    $flat[$row['station']] = array();
+                                }
+                                array_push($flat[$row['station']], $row['label']);
+                            }
+                            $result->close();
+                            foreach ($flat as $station => $platforms) {
+                                echo '<tr><td>' . $station . '</td><td>' . join(', ', $platforms) . '</td></tr>';
+                            }
+                        } else { die($conn->error); }
+                    ?>		
 				</tbody>
 			</table>
 		</div>
+
+
+
+
+
 		<div id="tracks" class="insert">
 			<p>Tracks</p>
 			<form action="create_track.php" method="post">
 				<label>From: <select name="track_to">
-
-<?php
-	$result = $conn->query("SELECT id, name FROM station ORDER BY name asc");
-	if ($result) {
-		while ($row = $result->fetch_assoc()) {
-			echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>'; 
-		}
-		$result->close();
-	}
-?>
+                    <?php
+                        $result = $conn->query("SELECT id, name FROM station ORDER BY name asc");
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>'; 
+                            }
+                            $result->close();
+                        }
+                    ?>
 				</select></label>
 				<label>To: <select name="track_from">
-<?php
-    $result = $conn->query("SELECT id, name FROM station ORDER BY name asc");
-    if ($result) {
-        while ($row = $result->fetch_assoc()) {
-            echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
-        }
-		$result->close();
-    }
-?>				
+                    <?php
+                        $result = $conn->query("SELECT id, name FROM station ORDER BY name asc");
+                        if ($result) {
+                            while ($row = $result->fetch_assoc()) {
+                                echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
+                            }
+                            $result->close();
+                        }
+                    ?>				
 				</select></label>
 				<label>Distance: <input type="text" name="track_distance" value="kilometers"></input></label>
 				<input type="submit" />
@@ -289,19 +309,19 @@ EOT;
 			<table>
 				<thead><tr><th>A</th><th>B</th><th>Distance (mi)</th><th>km</th></tr></thead>
 				<tbody>
-<?php
-	$result = $conn->query("SELECT a.name AS a, b.name AS b, distance AS km, kmh_to_mph(distance) AS mi FROM track AS t LEFT JOIN station AS a ON t.start = a.id LEFT JOIN station AS b ON t.end = b.id ORDER BY a.name, b.name ASC");
-	if ($result) {
-        $seen = array();
-		while ($row = $result->fetch_assoc()) {
-            if (!array_key_exists($row['b'], $seen) || !$seen[$row['b']] == $row['a']) {
-			    echo '<tr><td>' . $row['a'] . '</td><td>' . $row['b'] . '</td><td>' . $row['mi'] . '</td><td>' . $row['km'] . '</td></tr>';
-                $seen[$row['a']] = $row['b'];
-            }
-		}
-		$result->close();
-	}
-?>
+                    <?php
+                        $result = $conn->query("SELECT a.name AS a, b.name AS b, distance AS km, kmh_to_mph(distance) AS mi FROM track AS t LEFT JOIN station AS a ON t.start = a.id LEFT JOIN station AS b ON t.end = b.id ORDER BY a.name, b.name ASC");
+                        if ($result) {
+                            $seen = array();
+                            while ($row = $result->fetch_assoc()) {
+                                if (!array_key_exists($row['b'], $seen) || !$seen[$row['b']] == $row['a']) {
+                                    echo '<tr><td>' . $row['a'] . '</td><td>' . $row['b'] . '</td><td>' . $row['mi'] . '</td><td>' . $row['km'] . '</td></tr>';
+                                    $seen[$row['a']] = $row['b'];
+                                }
+                            }
+                            $result->close();
+                        }
+                    ?>
 				</tbody>
 			</table>
 		</div>
@@ -318,18 +338,18 @@ EOT;
                 <br/>
                 <label>Leaving From: <select name="schedule_source">
                     <?php
-                        $platform_options = "";
-                        $result = $conn->query("SELECT p.id AS id, s.name AS station, p.designation AS label FROM platform AS p LEFT JOIN station AS s ON s.id = p.station ORDER BY s.name, p.designation ASC");
+                        $station_options = "";
+                        $result = $conn->query("SELECT id, name FROM station ORDER BY name ASC");
                         if ($result){
                             while ($row = $result->fetch_assoc()) {
-                                $platform_options .= '<option value="' . $row['id'] . '">' . $row['station'] . ':' . $row['label'] . '</option>';
+                                $station_options .= '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
                             }
                             $result->close();
                         }
-                        echo $platform_options;
+                        echo $station_options;
                     ?>
                 </select></label>
-                <label>Arriving At: <select name="schedule_dest"><?php echo $platform_options; ?></select></label>
+                <label>Arriving At: <select name="schedule_dest"><?php echo $station_options; ?></select></label>
                 <label>Train: <select name="schedule_train">
                     <?php
                         $result = $conn->query("SELECT id, name FROM train ORDER BY name ASC");
@@ -345,7 +365,17 @@ EOT;
                 <input type="submit" />
             </form>
             <table>
-
+                <thead><tr><th>When</th><th>Where</th><th>Destination</th><th>ETA</th><th>Train</th></tr></thead>
+                <tbody>
+                    <?php
+                        $result = $conn->query("SELECT * from pretty");
+                        if ($result) {
+                            while($row = $result->fetch_assoc()) {
+                                echo '<tr><td>' . $row['departure'] . '</td><td>' . $row['leaving'] . '</td><td>' . $row['arriving'] . '</td><td>' . $row['eta'] . '</td><td>' . $row['train'] . '</td></tr>';
+                            }
+                        }
+                    ?>
+                </tbody>
             </table>
         </div>
 

@@ -17,8 +17,7 @@
     $source = $_POST['schedule_source'];
     $dest = $_POST['schedule_dest'];
     $train = $_POST['schedule_train'];
-	
-
+    
     if (!$stmt = $conn->prepare($select_tracks)) {
         die("Prepare failed: " . $conn->error);
     }
@@ -39,12 +38,13 @@
     }
 
     function nextHop($trackId, $dest) {
+        global $hstmt, $conn, $select_hop;
+        $hstmt->reset();
         if(!$hstmt->bind_param("ii", $trackId, $dest)) { die("Bind failed: " . $hstmt->error); }
         if(!$hstmt->execute()) { die("Execute failed: " . $hstmt->error); }
         $rs = $conn->query($select_hop);
         if(!$rs) { die("Query failed: " . $conn->error); }
         $n = $rs->fetch_array();
-        die($n);
         if ($n[0]){
             return $n[1];
         }
@@ -52,18 +52,24 @@
     }
     
     function dateAdd($base, $secs) {
-        $cstmt->bind_params("si", $base, $secs);
+        global $cstmt;
+        $cstmt->reset();
+        $cstmt->bind_param("si", $base, $secs);
         $cstmt->execute();
         $cstmt->bind_result($t);
         $cstmt->fetch();
+        $cstmt->store_result();
         return $t;
     }
     
     function trackDistance($tid) {
-        $dstmt->bind_params("i", $tid);
+        global $dstmt;
+        $dstmt->reset();
+        $dstmt->bind_param("i", $tid);
         $dstmt->execute();
         $dstmt->bind_result($d);
         $dstmt->fetch();
+        $dstmt->store_result();
         return $d;
     }
     
@@ -74,6 +80,7 @@
     if (!$stmt->execute()) {
         die("Execute failed: " . $stmt->error);
     }
+    $stmt->store_result();
     if (!$stmt->bind_result($i, $s, $e)){die("bind_result: " . $stmt->error);}
     $first = 0;
     while ($stmt->fetch()) {
@@ -90,8 +97,7 @@
         }
     }
     $stmt->close();
-    error_log("step 1 complete - 1st hop: $first");
-
+      
     /* step 2 - build an array of each hop */
     $hops = array();
     $next = $first;
@@ -99,21 +105,24 @@
         array_push($hops, $next);
         $next = nextHop($next, $dest);
     } 
+    $hstmt->close();
 
     /* step 3 - lookup our train's speed */
     $tstmt->bind_param("i", $train);
     $tstmt->execute();
     $tstmt->bind_result($speed);
     $tstmt->fetch();
+    $tstmt->close();
 
     /* step 4 - calculate when it will arrive and insert a schedule */
     $offset = 0;
     foreach ($hops as $h) {
         $date = dateAdd($departure, $offset);    
-        $istmt->bind_params("sii", $date, $train, $h);
-        $istmt->execute();
+        $istmt->reset();
+        if(!$istmt->bind_param("sii", $date, $train, $h)){die("bind_param: " . $istmt->error);}
+        if(!$istmt->execute()){die("execute: " . $istmt->error);}
         
-        $dist = trackDistnace($h);
+        $dist = trackDistance($h);
         /* # of seconds to get to the next dest + a 15 min window */
         $offset += (($dist / $speed) * 60 * 60) + (15 * 60);
     }
