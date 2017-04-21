@@ -121,8 +121,12 @@ EOT;
 			
 			th, td {
 				text-align: center;
-    				border-bottom: 1px solid #bbb;
+    		    border-bottom: 1px solid #bbb;
 			}
+        
+            td {
+                text-align: left;
+            }
 		</style>
 	</head>
 	<body>
@@ -290,7 +294,7 @@ EOT;
 	if ($result) {
         $seen = array();
 		while ($row = $result->fetch_assoc()) {
-            if (!$seen[$row['b']] == $row['a']) {
+            if (!array_key_exists($row['b'], $seen) || !$seen[$row['b']] == $row['a']) {
 			    echo '<tr><td>' . $row['a'] . '</td><td>' . $row['b'] . '</td><td>' . $row['mi'] . '</td><td>' . $row['km'] . '</td></tr>';
                 $seen[$row['a']] = $row['b'];
             }
