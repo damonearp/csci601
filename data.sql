@@ -16,31 +16,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `passenger`
---
-
-DROP TABLE IF EXISTS `passenger`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `passenger` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `itinerary` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`,`itinerary`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `passenger`
---
-
-LOCK TABLES `passenger` WRITE;
-/*!40000 ALTER TABLE `passenger` DISABLE KEYS */;
-/*!40000 ALTER TABLE `passenger` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `platform`
 --
 
@@ -79,9 +54,67 @@ SET character_set_client = utf8;
   `leaving` tinyint NOT NULL,
   `departure` tinyint NOT NULL,
   `arriving` tinyint NOT NULL,
-  `eta` tinyint NOT NULL
+  `eta` tinyint NOT NULL,
+  `open` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Table structure for table `reservation`
+--
+
+DROP TABLE IF EXISTS `reservation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `reservation` (
+  `passenger` varchar(255) NOT NULL,
+  `schedule` bigint(20) NOT NULL,
+  PRIMARY KEY (`passenger`,`schedule`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reservation`
+--
+
+LOCK TABLES `reservation` WRITE;
+/*!40000 ALTER TABLE `reservation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`csci601`@`localhost`*/ /*!50003 TRIGGER reserved_trigger BEFORE INSERT ON reservation 
+        FOR EACH ROW
+        UPDATE schedule SET reserved = reserved + 1 WHERE id = NEW.schedule */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`csci601`@`localhost`*/ /*!50003 TRIGGER unreserved_trigger AFTER DELETE ON reservation
+        FOR EACH ROW
+        UPDATE schedule SET reserved = reserved - 1 WHERE id = OLD.schedule */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `schedule`
@@ -94,8 +127,11 @@ CREATE TABLE `schedule` (
   `departure` datetime NOT NULL,
   `train` bigint(20) NOT NULL,
   `track` bigint(20) NOT NULL,
-  PRIMARY KEY (`departure`,`train`,`track`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `reserved` mediumint(9) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`departure`,`train`,`track`),
+  UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -104,6 +140,7 @@ CREATE TABLE `schedule` (
 
 LOCK TABLES `schedule` WRITE;
 /*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
+INSERT INTO `schedule` VALUES ('2017-05-05 06:00:00',4,1,10,0),('2017-05-05 07:23:30',4,15,11,0),('2017-05-05 09:04:57',4,16,12,0),('2017-05-05 09:20:00',3,22,1,0),('2017-05-05 09:43:34',4,4,13,0),('2017-05-05 10:47:05',3,8,2,0),('2017-05-05 11:21:15',4,5,14,0),('2017-05-05 12:17:55',3,7,3,0),('2017-05-05 13:07:26',4,19,15,0),('2017-05-05 13:31:15',3,6,4,0),('2017-05-05 14:31:25',4,20,16,0),('2017-05-05 14:47:05',3,18,5,0),('2017-05-05 15:52:33',4,21,17,0),('2017-05-05 16:22:30',3,17,6,0),('2017-05-05 17:33:32',4,9,18,0),('2017-05-05 17:50:25',3,3,7,0),('2017-05-05 18:26:15',3,2,8,0),('2017-05-05 19:57:30',3,14,9,0);
 /*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -200,7 +237,7 @@ UNLOCK TABLES;
 /*!50001 SET collation_connection      = latin1_swedish_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`csci601`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `pretty` AS select `train`.`name` AS `train`,`start`.`name` AS `leaving`,`schedule`.`departure` AS `departure`,`end`.`name` AS `arriving`,`eta`(`schedule`.`departure`,`train`.`speed`,`track`.`distance`) AS `eta` from ((((`schedule` left join `train` on((`train`.`id` = `schedule`.`train`))) left join `track` on((`track`.`id` = `schedule`.`track`))) left join `station` `start` on((`track`.`start` = `start`.`id`))) left join `station` `end` on((`track`.`end` = `end`.`id`))) order by `schedule`.`departure` */;
+/*!50001 VIEW `pretty` AS select `train`.`name` AS `train`,`start`.`name` AS `leaving`,`schedule`.`departure` AS `departure`,`end`.`name` AS `arriving`,`eta`(`schedule`.`departure`,`train`.`speed`,`track`.`distance`) AS `eta`,(`train`.`capacity` - `schedule`.`reserved`) AS `open` from ((((`schedule` left join `train` on((`train`.`id` = `schedule`.`train`))) left join `track` on((`track`.`id` = `schedule`.`track`))) left join `station` `start` on((`track`.`start` = `start`.`id`))) left join `station` `end` on((`track`.`end` = `end`.`id`))) order by `schedule`.`departure` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -214,4 +251,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-04-21  2:16:49
+-- Dump completed on 2017-04-25 12:07:39
