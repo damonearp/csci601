@@ -67,9 +67,10 @@ DROP TABLE IF EXISTS `reservation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `reservation` (
+  `id` char(36) NOT NULL,
   `passenger` varchar(255) NOT NULL,
   `schedule` bigint(20) NOT NULL,
-  PRIMARY KEY (`passenger`,`schedule`)
+  PRIMARY KEY (`id`,`passenger`,`schedule`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -79,43 +80,9 @@ CREATE TABLE `reservation` (
 
 LOCK TABLES `reservation` WRITE;
 /*!40000 ALTER TABLE `reservation` DISABLE KEYS */;
-INSERT INTO `reservation` VALUES ('01',23),('01',24),('01',25),('01',26),('01',27),('Damon',7),('Damon',8),('Damon',9),('Damon',19),('Damon',20),('Damon',21),('Damon',22);
+INSERT INTO `reservation` VALUES ('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',7),('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',8),('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',9),('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',19),('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',20),('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',21),('6dcc2f7d-2a2b-11e7-955c-080027855c83','Damon',22);
 /*!40000 ALTER TABLE `reservation` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = latin1 */ ;
-/*!50003 SET character_set_results = latin1 */ ;
-/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = '' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`csci601`@`localhost`*/ /*!50003 TRIGGER reserved_trigger BEFORE INSERT ON reservation 
-        FOR EACH ROW
-        UPDATE schedule SET reserved = reserved + 1 WHERE id = NEW.schedule */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = latin1 */ ;
-/*!50003 SET character_set_results = latin1 */ ;
-/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = '' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`csci601`@`localhost`*/ /*!50003 TRIGGER unreserved_trigger AFTER DELETE ON reservation
-        FOR EACH ROW
-        UPDATE schedule SET reserved = reserved - 1 WHERE id = OLD.schedule */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `schedule`
@@ -132,7 +99,7 @@ CREATE TABLE `schedule` (
   `reserved` mediumint(9) NOT NULL DEFAULT '0',
   PRIMARY KEY (`departure`,`train`,`track`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,9 +108,26 @@ CREATE TABLE `schedule` (
 
 LOCK TABLES `schedule` WRITE;
 /*!40000 ALTER TABLE `schedule` DISABLE KEYS */;
-INSERT INTO `schedule` VALUES ('2017-05-05 06:00:00',4,1,10,0),('2017-05-05 07:23:30',4,15,11,0),('2017-05-05 08:30:00',5,26,19,1),('2017-05-05 09:04:57',4,16,12,0),('2017-05-05 09:20:00',3,22,1,0),('2017-05-05 09:43:34',4,4,13,0),('2017-05-05 10:47:05',3,8,2,0),('2017-05-05 10:47:29',5,25,20,1),('2017-05-05 11:21:15',4,5,14,0),('2017-05-05 12:00:00',2,27,23,1),('2017-05-05 12:01:14',5,24,21,1),('2017-05-05 12:17:55',3,7,3,0),('2017-05-05 13:07:16',2,29,24,1),('2017-05-05 13:07:26',4,19,15,0),('2017-05-05 13:22:46',5,23,22,1),('2017-05-05 13:31:15',3,6,4,0),('2017-05-05 13:54:38',2,1,25,1),('2017-05-05 14:31:25',4,20,16,0),('2017-05-05 14:45:44',2,15,26,1),('2017-05-05 14:47:05',3,18,5,0),('2017-05-05 15:46:18',2,16,27,1),('2017-05-05 15:52:33',4,21,17,0),('2017-05-05 16:22:30',3,17,6,0),('2017-05-05 17:33:32',4,9,18,0),('2017-05-05 17:50:25',3,3,7,1),('2017-05-05 18:26:15',3,2,8,1),('2017-05-05 19:57:30',3,14,9,1);
+INSERT INTO `schedule` VALUES ('2017-05-05 06:00:00',4,1,10,0),('2017-05-05 07:23:30',4,15,11,0),('2017-05-05 08:30:00',5,26,19,0),('2017-05-05 09:04:57',4,16,12,0),('2017-05-05 09:20:00',3,22,1,0),('2017-05-05 09:43:34',4,4,13,0),('2017-05-05 10:47:05',3,8,2,1),('2017-05-05 10:47:29',5,25,20,0),('2017-05-05 11:21:15',4,5,14,0),('2017-05-05 12:01:14',5,24,21,0),('2017-05-05 12:17:55',3,7,3,1),('2017-05-05 13:07:26',4,19,15,0),('2017-05-05 13:22:46',5,23,22,0),('2017-05-05 13:31:15',3,6,4,1),('2017-05-05 14:31:25',4,20,16,0),('2017-05-05 14:47:05',3,18,5,1),('2017-05-05 15:52:33',4,21,17,0),('2017-05-05 16:22:30',3,17,6,1),('2017-05-05 17:33:32',4,9,18,0),('2017-05-05 17:50:25',3,3,7,1),('2017-05-05 18:26:15',3,2,8,0),('2017-05-05 19:10:15',4,9,28,0),('2017-05-05 19:57:30',3,14,9,0),('2017-05-05 20:46:58',4,31,29,0);
 /*!40000 ALTER TABLE `schedule` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`csci601`@`localhost`*/ /*!50003 TRIGGER schedule_delete BEFORE DELETE ON schedule
+        FOR EACH ROW
+            CALL delete_reservations_with(OLD.id) */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `station`
@@ -157,7 +141,7 @@ CREATE TABLE `station` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -166,7 +150,7 @@ CREATE TABLE `station` (
 
 LOCK TABLES `station` WRITE;
 /*!40000 ALTER TABLE `station` DISABLE KEYS */;
-INSERT INTO `station` VALUES (5,'Baltimore (MD)'),(16,'Boston (MA)'),(15,'Chicago (IL)'),(13,'Cleveland (OH)'),(9,'Fayetteville (NC)'),(8,'Florence (SC)'),(17,'New Haven (CT)'),(2,'New York (NY)'),(4,'North Charleston (SC)'),(7,'North Philadelphia (PA)'),(6,'Pittsburgh (PA)'),(10,'Richmond (VA)'),(11,'Rocky Mount (NC)'),(12,'Savannah (GA)'),(14,'Toledo (OH)'),(1,'Union Station (DC)');
+INSERT INTO `station` VALUES (5,'Baltimore (MD)'),(16,'Boston (MA)'),(15,'Chicago (IL)'),(13,'Cleveland (OH)'),(9,'Fayetteville (NC)'),(8,'Florence (SC)'),(18,'Miami (FL)'),(17,'New Haven (CT)'),(2,'New York (NY)'),(4,'North Charleston (SC)'),(7,'North Philadelphia (PA)'),(6,'Pittsburgh (PA)'),(10,'Richmond (VA)'),(11,'Rocky Mount (NC)'),(12,'Savannah (GA)'),(14,'Toledo (OH)'),(1,'Union Station (DC)');
 /*!40000 ALTER TABLE `station` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -184,7 +168,7 @@ CREATE TABLE `track` (
   `distance` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `start` (`start`,`end`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -193,7 +177,7 @@ CREATE TABLE `track` (
 
 LOCK TABLES `track` WRITE;
 /*!40000 ALTER TABLE `track` DISABLE KEYS */;
-INSERT INTO `track` VALUES (1,2,7,145),(2,5,7,183),(3,1,5,50),(4,1,10,175),(5,10,11,193),(6,9,11,146),(7,8,9,140),(8,4,8,182),(9,4,12,173),(10,1,6,370),(11,6,13,214),(12,13,14,189),(13,14,15,394),(14,7,2,145),(15,7,5,183),(16,5,1,50),(17,10,1,175),(18,11,10,193),(19,11,9,146),(20,9,8,140),(21,8,4,182),(22,12,4,173),(23,6,1,370),(24,13,6,214),(25,14,13,189),(26,15,14,394),(27,16,17,210),(28,2,17,130),(29,17,2,130),(30,17,16,210);
+INSERT INTO `track` VALUES (1,2,7,145),(2,5,7,183),(3,1,5,50),(4,1,10,175),(5,10,11,193),(6,9,11,146),(7,8,9,140),(8,4,8,182),(9,4,12,173),(10,1,6,370),(11,6,13,214),(12,13,14,189),(13,14,15,394),(14,7,2,145),(15,7,5,183),(16,5,1,50),(17,10,1,175),(18,11,10,193),(19,11,9,146),(20,9,8,140),(21,8,4,182),(22,12,4,173),(23,6,1,370),(24,13,6,214),(25,14,13,189),(26,15,14,394),(27,16,17,210),(28,2,17,130),(29,17,2,130),(30,17,16,210),(31,12,18,779);
 /*!40000 ALTER TABLE `track` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -211,7 +195,7 @@ CREATE TABLE `train` (
   `speed` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -220,9 +204,26 @@ CREATE TABLE `train` (
 
 LOCK TABLES `train` WRITE;
 /*!40000 ALTER TABLE `train` DISABLE KEYS */;
-INSERT INTO `train` VALUES (1,'Northeast Regional',525,201),(2,'Acela Express',450,241),(3,'Palmetto',330,144),(4,'Silver Meteor',420,127),(5,'Capitol Limited',225,193);
+INSERT INTO `train` VALUES (1,'Northeast Regional',525,201),(3,'Palmetto',330,144),(4,'Silver Meteor',420,127),(5,'Capitol Limited',225,193);
 /*!40000 ALTER TABLE `train` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = latin1 */ ;
+/*!50003 SET character_set_results = latin1 */ ;
+/*!50003 SET collation_connection  = latin1_swedish_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = '' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`csci601`@`localhost`*/ /*!50003 TRIGGER train_delete BEFORE DELETE ON train
+        FOR EACH ROW
+          DELETE FROM schedule WHERE train = OLD.id */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Final view structure for view `pretty`
@@ -252,4 +253,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-04-25 17:50:27
+-- Dump completed on 2017-04-25 22:53:01

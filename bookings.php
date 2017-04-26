@@ -74,6 +74,9 @@ EOT;
         </style>
     </head>
     <body>
+        <div>
+            <a href='index.php'>home</a>
+        </div>
         <div class="insert">
             <p>Book</p>
             <form action="book_travel.php" method="post">

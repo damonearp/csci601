@@ -4,7 +4,7 @@
                 die("Connection failed: ". $conn->connect_error);
         }
 
-    $id = $_POST['train_id'];
+    $id = $_GET['id'];
     $conn->query("DELETE FROM train WHERE id=$id");
 	  header("Location: index.php#trains");
 ?>

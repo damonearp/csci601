@@ -93,7 +93,7 @@ $drop_schedule_delete_trigger = "DROP TRIGGER IF EXISTS schedule_delete";
 $create_schedule_delete_trigger = <<<EOT
     CREATE TRIGGER schedule_delete BEFORE DELETE ON schedule
         FOR EACH ROW
-          CALL delete_reservation_with(OLD.id)
+            CALL delete_reservations_with(OLD.id)
 EOT;
 
 $drop_train_delete_trigger = "DROP TRIGGER IF EXISTS train_delete";
@@ -160,6 +160,9 @@ EOT;
 		</style>
 	</head>
 	<body>
+        <div> 
+            <a href='bookings.php'>Make A Reservation</a>
+        </div>
 		<h3>Initialization Status</h3>
 		<ol>
             <?php
@@ -192,11 +195,11 @@ EOT;
                     die("Failed to create reservation table: " . $conn->error);
                 }
                 echo "<li>Create table reservation: ok</li>";
-                if (!$conn->query($drop_reserved_trigger) || !$conn->query($create_reserved_trigger)) {
+                if (!$conn->query($drop_reserved_trigger)){// || !$conn->query($create_reserved_trigger)) {
                     die("Failed to create reserved trigger: " . $conn->error);
                 }
                 echo "<li>Create trigger reserved: ok</li>";
-                if (!$conn->query($drop_unreserved_trigger) || !$conn->query($create_unreserved_trigger)) {
+                if (!$conn->query($drop_unreserved_trigger)){// || !$conn->query($create_unreserved_trigger)) {
                     die("Failed to create unreserved trigger: " . $conn->error);
                 }
                 echo "<li>Create trigger unreserved: ok</li>";
@@ -260,6 +263,7 @@ EOT;
 			<form action="create_train.php" method="post">
 				<label>Train Name: <input type="text" name="train_name" /></label>
 				<label>Capacity: <input type="text" name="train_capacity" /></label>
+                <label>Speed: <input type="text" name="train_speed" /></label>
 				<input type="submit" />
 			</form>
 			<table>
