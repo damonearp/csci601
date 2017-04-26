@@ -53,9 +53,10 @@ EOT;
 $create_reservation = <<<EOT
     CREATE TABLE IF NOT EXISTS reservation 
     (
+        id CHAR(36) NOT NULL,
         passenger VARCHAR(255) NOT NULL,
         schedule BIGINT NOT NULL REFERENCES schedule(id),
-        PRIMARY KEY (passenger, schedule)
+        PRIMARY KEY (id, passenger, schedule)
     )
 EOT;
 $create_pretty = <<<EOT
@@ -216,10 +217,10 @@ EOT;
 				<thead><tr><th>Station</th></thead>
 				<tbody>
                     <?php
-                        $result = $conn->query("SELECT name FROM station ORDER BY name ASC");
+                        $result = $conn->query("SELECT id, name FROM station ORDER BY name ASC");
                         if ($result) {
                             while ($row = $result->fetch_assoc()) {
-                                echo "<tr><td>" . $row["name"]  . "</td></tr>";
+                                echo "<tr><td>$row[name]<td><a href='edit_station.php?id=$row[id]'>edit</a></td></tr>";
                             }
                             $result->close();
                         }
@@ -242,10 +243,10 @@ EOT;
 				<thead><tr><th>Train</th><th>Capacity</th><th>Speed (mph)</th><th>Speed (kmh)</th></tr></thead>
 				<tbody>
                     <?php
-                        $result = $conn->query("SELECT name, capacity, speed AS kmh, kmh_to_mph(speed) AS mph FROM train ORDER BY name ASC");
+                        $result = $conn->query("SELECT id, name, capacity, speed AS kmh, kmh_to_mph(speed) AS mph FROM train ORDER BY name ASC");
                         if ($result) {
                             while ($row = $result->fetch_assoc()) {
-                                echo "<tr><td>" . $row["name"]  . "</td><td>" . $row["capacity"] . "</td><td>" . $row["mph"] . "</td><td>" . $row["kmh"] . "</td></tr>";
+                                echo "<tr><td>$row[name]</td><td>$row[capacity]</td><td>$row[mph]</td><td>$row[kmh]</td><td><a href='edit_train.php?id=$row[id]'>edit</a><br /><a href='delete_train.php?id=$row[id]'>delete</a></td></tr>";
                             }
                             $result->close();
                         }

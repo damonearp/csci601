@@ -16,7 +16,7 @@ EOT;
     $select_tracks = "SELECT id, start, end FROM track WHERE ? IN (start, end)";
     $call_hop = "CALL next_hop(?, ?, @found, @nextId)";
     $select_hop = "SELECT @found, @nextId";
-    $insert = "INSERT INTO reservation (passenger, schedule) values (?, ?)";
+    $insert = "INSERT INTO reservation (id, passenger, schedule) values (?, ?, ?)";
 
 	$conn = new mysqli("localhost", "csci601", "csci601", "csci601");
     if ($conn->connect_error) {
@@ -53,6 +53,14 @@ EOT;
             return $n[1];
         }
         return 0;
+    }
+
+    function genUUID() {
+        global $conn;
+        if ($result = $conn->query("SELECT uuid()")) {
+            return $result->fetch_array()[0];
+        }
+        die("Cannot generate uuid: " . $conn->error);
     }
     
     /* step 1 - find our first hop */
@@ -92,19 +100,25 @@ EOT;
 
 
     /* step 3 - for each hop find a scheduled train */
+    $reservationId = genUUID();
     $ref = $date;
+
+    $conn->query("BEGIN");
     foreach ($hops as $h) {
         $sstmt->bind_param("is", $h, $ref); 
-        if(!$sstmt->execute()){die("Failed to execute: " . $sstmt->error);}
-        if(!$sstmt->bind_result($id, $ref)){die("No scheduled train exists");}
-        $sstmt->fetch();
+        $sstmt->execute();
+        $sstmt->bind_result($id, $ref);
+        if(!$sstmt->fetch()){
+            $sstmt->reset();
+            $conn->query("ROLLBACK");
+            die("Cannot book trip: no viable path scheduled");
+        }
         $sstmt->reset();
-        error_log("Found $id arriving @ $ref");
 
-        $istmt->bind_param("si", $passenger, $id);
+        $istmt->bind_param("ssi", $reservationId, $passenger, $id);
         $istmt->execute();
         $istmt->reset(); 
     }
-    
+    $conn->query("COMMIT"); 
 	header("Location: bookings.php");
 ?>

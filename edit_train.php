@@ -57,8 +57,8 @@
             <form method="POST" action="update_train.php">
                 <input type="hidden" name="train_id" value="<?php echo "$id"; ?>" />
                 <label>Name: <input type="text" name="train_name" value="<?php echo "$name"; ?>" /></label>
-                <label>Name: <input type="text" name="train_capacity" value="<?php echo "$capacity"; ?>" /></label>
-                <label>Name: <input type="text" name="train_speed" value="<?php echo "$speed"; ?>" /></label>
+                <label>Capacity: <input type="text" name="train_capacity" value="<?php echo "$capacity"; ?>" /></label>
+                <label>Speed: <input type="text" name="train_speed" value="<?php echo "$speed"; ?>" /></label>
                 <input type="submit" />
             </form>
         </div>

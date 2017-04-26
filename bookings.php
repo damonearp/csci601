@@ -63,6 +63,7 @@ EOT;
             }
             
             th, td {
+                padding: 3px;
                 text-align: center;
                 border-bottom: 1px solid #bbb;
             }
@@ -100,5 +101,61 @@ EOT;
                 </tbody>
             </table>
         </div>
+
+        <div class="insert">
+            <p>Reservations By Passenger</p>
+            <?php
+                $resv = array(); 
+                $result = $conn->query("SELECT id, passenger FROM reservation GROUP BY id, passenger ORDER BY passenger ASC");
+                while ($row = $result->fetch_assoc()) {
+                    $id = $row['id'];
+                    $pass = $row['passenger'];
+                    if (!isset($resv[$pass])) {
+                        $resv[$pass] = array();
+                    }
+                    array_push($resv[$pass], $id);
+                }
+                $result->close(); 
+
+$lookup = $conn->prepare(
+<<<EOT
+    SELECT
+        s.departure AS departure, 
+        train.name AS train, 
+        start.name AS start, 
+        end.name AS end,
+        eta(s.departure, train.speed, track.distance)
+    FROM 
+        reservation AS r
+            LEFT JOIN schedule AS s ON s.id = r.schedule 
+            LEFT JOIN train ON train.id = s.train 
+            LEFT JOIN track ON track.id = s.track 
+            LEFT JOIN station AS start ON start.id = track.start 
+            LEFT JOIN station as end ON end.id = track.end  
+    WHERE 
+        r.id = ? ORDER BY s.departure ASC
+EOT
+);
+
+                foreach ($resv as $pass => $ids) {
+                    echo '<div class="insert"><p>' . $pass . '</p>';
+                    foreach ($ids as $id) {
+                        $lookup->bind_param("s", $id);
+                        $lookup->execute();
+                        $lookup->bind_result($date, $train, $start, $end, $eta);
+                        echo '<table><tbody><tr><td>';
+                        echo '<table class="reservation"><thead><tr><th>Departing Time</th><th>Leaving</th><th>Arriving</th><th>ETA</th><th>Train</th></tr></thead><tbody>';
+                        while ($lookup->fetch()) {
+                            echo '<tr><td>' . $date . '</td><td>' . $start . '</td><td>' . $end  . '</td><td>' . $eta  . '</td><td>' . $train . '</td></tr>';
+                        } 
+                        echo '</tbody></table></td><td>';
+                        echo '<form method="POST" action="cancel_reservation.php"><input type="hidden" name="id" value="' . $id . '" /><input type="submit" value="Cancel Trip" /></form>';
+                        echo '</td></tr></tbody></table>';    
+                        $lookup->reset();
+                    }
+                    echo '</div>';
+                }
+                $lookup->close();
+            ?> 
     </body>
 </html>

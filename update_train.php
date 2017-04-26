@@ -5,10 +5,10 @@
                 die("Connection failed: ". $conn->connect_error);
         }
 
-  $id = $_POST['train_id'];
+    $id = $_POST['train_id'];
 	$name = $_POST['train_name'];
-	$name = $_POST['train_capacity'];
-	$name = $_POST['train_speed'];
+	$capacity = $_POST['train_capacity'];
+	$speed = $_POST['train_speed'];
 
 	$stmt = $conn->prepare($update_train);
 	if (!$stmt) {

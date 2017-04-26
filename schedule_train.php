@@ -17,7 +17,7 @@
     $source = $_POST['schedule_source'];
     $dest = $_POST['schedule_dest'];
     $train = $_POST['schedule_train'];
-    
+
     if (!$stmt = $conn->prepare($select_tracks)) {
         die("Prepare failed: " . $conn->error);
     }
