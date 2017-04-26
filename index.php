@@ -1,8 +1,8 @@
-<?php 
+<?php
 $create_station = <<<EOT
-	CREATE TABLE IF NOT EXISTS station 
+	CREATE TABLE IF NOT EXISTS station
 	(
-		id BIGINT NOT NULL AUTO_INCREMENT, 
+		id BIGINT NOT NULL AUTO_INCREMENT,
 		name VARCHAR(255) NOT NULL UNIQUE,
 		PRIMARY KEY (id)
 	)
@@ -23,7 +23,7 @@ $create_train = <<<EOT
 		id BIGINT NOT NULL AUTO_INCREMENT,
 		name varchar(255) NOT NULL UNIQUE,
 		capacity MEDIUMINT NOT NULL CHECK(VALUE >= 0),
-		speed BIGINT NOT NULL, 
+		speed BIGINT NOT NULL,
 		PRIMARY KEY (id)
 	)
 EOT;
@@ -39,19 +39,19 @@ $create_track = <<<EOT
 	)
 EOT;
 $create_schedule = <<<EOT
-	CREATE TABLE IF NOT EXISTS schedule 
+	CREATE TABLE IF NOT EXISTS schedule
 	(
         id BIGINT NOT NULL AUTO_INCREMENT,
         departure DATETIME NOT NULL,
         train BIGINT NOT NULL REFERENCES train(id),
         track BIGINT NOT NULL REFERENCES track(id),
-        reserved MEDIUMINT NOT NULL DEFAULT 0, 
+        reserved MEDIUMINT NOT NULL DEFAULT 0,
 		PRIMARY KEY (departure, train, track),
         UNIQUE (id)
 	)
 EOT;
 $create_reservation = <<<EOT
-    CREATE TABLE IF NOT EXISTS reservation 
+    CREATE TABLE IF NOT EXISTS reservation
     (
         id CHAR(36) NOT NULL,
         passenger VARCHAR(255) NOT NULL,
@@ -62,10 +62,10 @@ EOT;
 $create_pretty = <<<EOT
     CREATE OR REPLACE VIEW pretty AS
         SELECT
-            train.name AS train, 
-            start.name AS leaving, 
+            train.name AS train,
+            start.name AS leaving,
             schedule.departure AS departure,
-            end.name AS arriving, 
+            end.name AS arriving,
             eta(schedule.departure, train.speed, track.distance) AS eta,
             train.capacity - schedule.reserved AS open
         FROM
@@ -74,13 +74,13 @@ $create_pretty = <<<EOT
                 LEFT JOIN track AS track ON track.id = schedule.track
                     LEFT JOIN station AS start ON track.start = start.id
                     LEFT JOIN station AS end ON track.end = end.id
-        ORDER BY schedule.departure ASC 
+        ORDER BY schedule.departure ASC
 EOT;
 $drop_reserved_trigger = "DROP TRIGGER IF EXISTS reserved_trigger";
 $create_reserved_trigger = <<<EOT
-    CREATE TRIGGER reserved_trigger BEFORE INSERT ON reservation 
+    CREATE TRIGGER reserved_trigger BEFORE INSERT ON reservation
         FOR EACH ROW
-        UPDATE schedule SET reserved = reserved + 1 WHERE id = NEW.schedule 
+        UPDATE schedule SET reserved = reserved + 1 WHERE id = NEW.schedule
 EOT;
 $drop_unreserved_trigger = "DROP TRIGGER IF EXISTS unreserved_trigger";
 $create_unreserved_trigger = <<<EOT
@@ -88,6 +88,21 @@ $create_unreserved_trigger = <<<EOT
         FOR EACH ROW
         UPDATE schedule SET reserved = reserved - 1 WHERE id = OLD.schedule
 EOT;
+
+$drop_schedule_delete_trigger = "DROP TRIGGER IF EXISTS schedule_delete";
+$create_schedule_delete_trigger = <<<EOT
+    CREATE TRIGGER schedule_delete BEFORE DELETE ON schedule
+        FOR EACH ROW
+          CALL delete_reservation_with(OLD.id)
+EOT;
+
+$drop_train_delete_trigger = "DROP TRIGGER IF EXISTS train_delete";
+$create_train_delete_trigger = <<<EOT
+    CREATE TRIGGER train_delete BEFORE DELETE ON train
+        FOR EACH ROW
+          DELETE FROM schedule WHERE train = OLD.id
+EOT;
+
 $drop_mph_to_kmh = "DROP FUNCTION IF EXISTS mph_to_kmh";
 $create_mph_to_kmh = <<<EOT
 	CREATE FUNCTION mph_to_kmh (mph BIGINT) RETURNS BIGINT RETURN mph * 1.60934
@@ -98,7 +113,7 @@ $create_kmh_to_mph = <<<EOT
 EOT;
 $drop_eta = "DROP FUNCTION IF EXISTS eta";
 $create_eta = <<<EOT
-    CREATE FUNCTION eta (start DATETIME, speed BIGINT, distance BIGINT) RETURNS DATETIME 
+    CREATE FUNCTION eta (start DATETIME, speed BIGINT, distance BIGINT) RETURNS DATETIME
         RETURN start + INTERVAL (CAST(distance AS DOUBLE) / CAST(speed AS DOUBLE) * 60 * 60) SECOND
 EOT;
 ?>
@@ -113,14 +128,14 @@ EOT;
 				font-family: "Courier New", monospace;
 				font-size: small;
 			}
-		
+
 			.insert {
 				padding: 5px;
 				border-style: solid;
 				border-width: 1px;
-				margin-bottom: 5px;	
+				margin-bottom: 5px;
 			}
-			
+
 			.insert p {
 				font-weight: bold;
 				color: red;
@@ -129,16 +144,16 @@ EOT;
 			.insert form {
 				margin-bottom: 5px;
 			}
-	
+
 			.insert th {
 				color: red;
 			}
-			
+
 			th, td {
 				text-align: center;
     		    border-bottom: 1px solid #bbb;
 			}
-        
+
             td {
                 text-align: left;
             }
@@ -163,7 +178,7 @@ EOT;
                 echo "<li>Create table platform: ok</li>";
                 if (!$conn->query($create_train)) {
                     die("Failed to create train table: " . $conn->error);
-                }	
+                }
                 echo "<li>Create table train: ok</li>";
                 if (!$conn->query($create_track)) {
                     die("Failed to create track table: " . $conn->error);
@@ -185,6 +200,14 @@ EOT;
                     die("Failed to create unreserved trigger: " . $conn->error);
                 }
                 echo "<li>Create trigger unreserved: ok</li>";
+                if (!$conn->query($drop_schedule_delete_trigger) || !$conn->query($create_schedule_delete_trigger)) {
+                    die("Failed to create schedule_delete trigger: " . $conn->error);
+                }
+                echo "<li>Create trigger schedule_delete: ok</li>";
+                if (!$conn->query($drop_train_delete_trigger) || !$conn->query($create_train_delete_trigger)) {
+                    die("Failed to create train_delete trigger: " . $conn->error);
+                }
+                echo "<li>Create trigger train_delete: ok</li>";
                 if (!$conn->query($create_pretty)) {
                     die("Failed to create pretty view: " . $conn->error);
                 }
@@ -206,7 +229,7 @@ EOT;
 		<h3>Operations</h3>
 
 
-		
+
 		<div id="stations" class="insert">
 			<p>Stations</p>
 			<form action="create_station.php" method="post">
@@ -260,12 +283,12 @@ EOT;
 
 
 		<div id="platforms" class="insert">
-			<p>Platforms</p>	
+			<p>Platforms</p>
 			<form action="create_platform.php" method="post">
 				<label>Platform: <input type="text" name="platform_label" /></label>
 				<label>Station: <select name="platform_station">
                     <?php
-                        $result = $conn->query("SELECT id, name FROM station ORDER BY name ASC");	
+                        $result = $conn->query("SELECT id, name FROM station ORDER BY name ASC");
                         if ($result) {
                             while ($row = $result->fetch_assoc()) {
                                 echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
@@ -294,7 +317,7 @@ EOT;
                                 echo '<tr><td>' . $station . '</td><td>' . join(', ', $platforms) . '</td></tr>';
                             }
                         } else { die($conn->error); }
-                    ?>		
+                    ?>
 				</tbody>
 			</table>
 		</div>
@@ -311,7 +334,7 @@ EOT;
                         $result = $conn->query("SELECT id, name FROM station ORDER BY name asc");
                         if ($result) {
                             while ($row = $result->fetch_assoc()) {
-                                echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>'; 
+                                echo '<option value="' . $row['id'] . '">' . $row['name'] . '</option>';
                             }
                             $result->close();
                         }
@@ -326,7 +349,7 @@ EOT;
                             }
                             $result->close();
                         }
-                    ?>				
+                    ?>
 				</select></label>
 				<label>Distance: <input type="text" name="track_distance" value="kilometers"></input></label>
 				<input type="submit" />
@@ -396,8 +419,8 @@ EOT;
                         $result = $conn->query("SELECT * from pretty");
                         if ($result) {
                             while($row = $result->fetch_assoc()) {
-                                echo '<tr><td>' . $row['departure'] . '</td><td>' . $row['leaving'] . '</td><td>' 
-                                    . $row['arriving'] . '</td><td>' . $row['eta'] . '</td><td>' . $row['train'] 
+                                echo '<tr><td>' . $row['departure'] . '</td><td>' . $row['leaving'] . '</td><td>'
+                                    . $row['arriving'] . '</td><td>' . $row['eta'] . '</td><td>' . $row['train']
                                     . '</td><td>' . $row['open'] . '</td></tr>';
                             }
                         }
